@@ -112,7 +112,7 @@ public:
         }
         return true;
     }
-	string GetOption(const string& key, const string& defaultValue = "0", bool isBase64Encoded = false){
+	string GetOption(const string& key, const string& defaultValue = "", bool isBase64Encoded = false){
 
         Value* value = FindValueByKey(key);
         if (value) {
@@ -199,21 +199,31 @@ public:
 };
 bool fnApplySettings(CConfig* cfg)
 {
-	if (!cfg)
-	{
-		return false;
-	}
+    if (!cfg)
+    {
+        return false;
+    }
 
-	DB db;
-	db.Host = cfg->GetOption("App.Globals.DB.HostName");
-	db.Instance = cfg->GetOption("App.Globals.DB.InstanceName");
-	db.Port = stoi(cfg->GetOption("App.Globals.DB.PortNo"));
+    DB db;
+    db.Host = cfg->GetOption("App.Globals.DB.HostName");
+    db.Instance = cfg->GetOption("App.Globals.DB.InstanceName");
+    try {
+        db.Port = stoi(cfg->GetOption("App.Globals.DB.PortNo"));
+    }
+    catch (exception& e) {
+        cerr << "Error: Invalid PortNo value. " << e.what() << endl;
+        return false;
+    }
     db.Password = cfg->GetOption("App.Globals.DB.Password", "defaultPassword", true);
 
     MainFrame mainFrame;
-
-    mainFrame.FontScale = stod(cfg->GetOption("App.Globals.Frames.RootFrame.FontScale"));
-
+    try {
+        mainFrame.FontScale = stod(cfg->GetOption("App.Globals.Frames.RootFrame.FontScale"));
+    }
+    catch (exception& e) {
+        cerr << "Error: Invalid FontScale value. " << e.what() << endl;
+        return false;
+    }
     Value* sect = cfg->GetSection("App.Globals.Frames.RootFrame.Placement");
 
     if (sect && sect->IsObject()) {
@@ -238,7 +248,7 @@ bool fnApplySettings(CConfig* cfg)
         error_messanger.ShowMsg("Can’t save option Password :(");
     }
 
-	return true;
+    return true;
 }
 
 
