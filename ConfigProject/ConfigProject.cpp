@@ -90,6 +90,40 @@ public:
     Value* GetSection(const string& key) {
         return FindValueByKey(key);
     }
+    bool SetOption(const string& key, int value) {
+        Value* v = FindValueByKey(key);
+        if (v && v->IsInt()) {
+            v->SetInt(value);
+            return true;
+        }
+        return false;
+    }
+    bool SetOption(const string& key, double value) {
+        Value* v = FindValueByKey(key);
+        if (v && v->IsDouble()) {
+            v->SetDouble(value);
+            return true;
+        }
+        return false;
+    }
+
+    bool SetOption(const string& key, bool value) {
+        Value* v = FindValueByKey(key);
+        if (v && v->IsBool()) {
+            v->SetBool(value);
+            return true;
+        }
+        return false;
+    }
+
+    bool SetOption(const string& key, const string& value) {
+        Value* v = FindValueByKey(key);
+        if (v && v->IsString()) {
+            v->SetString(value.c_str(), doc.GetAllocator());
+            return true;
+        }
+        return false;
+    }
 };
 class DB {
 public:
@@ -138,6 +172,12 @@ bool fnApplySettings(CConfig* cfg)
             mainFrame.Width = (*sect)["Width"].GetInt();
             mainFrame.Height = (*sect)["Height"].GetInt();
         }
+    }
+
+    ErrorMessage error_messanger;
+
+    if (!sect || !cfg->SetOption("App.Globals.Frames.RootFrame.Placement.ScreenPosX", mainFrame.x + 10)) {
+        error_messanger.ShowMsg("Can’t save option ScreenPosX :(");
     }
 
 	return true;
