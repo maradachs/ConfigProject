@@ -87,6 +87,9 @@ public:
         }
         return defaultValue;
 	}
+    Value* GetSection(const string& key) {
+        return FindValueByKey(key);
+    }
 };
 class DB {
 public:
@@ -95,6 +98,18 @@ public:
 	int Port;
 };
 
+class MainFrame {
+public:
+    int x;
+    int y;
+    int Width;
+    int Height;
+    double FontScale;
+
+    void MaximizeWind() {
+        cout << "Window maximized." << endl;
+    }
+};
 bool fnApplySettings(CConfig* cfg)
 {
 	if (!cfg)
@@ -106,6 +121,24 @@ bool fnApplySettings(CConfig* cfg)
 	db.Host = cfg->GetOption("App.Globals.DB.HostName");
 	db.Instance = cfg->GetOption("App.Globals.DB.InstanceName");
 	db.Port = stoi(cfg->GetOption("App.Globals.DB.PortNo"));
+
+    MainFrame mainFrame;
+
+    mainFrame.FontScale = stod(cfg->GetOption("App.Globals.Frames.RootFrame.FontScale"));
+
+    Value* sect = cfg->GetSection("App.Globals.Frames.RootFrame.Placement");
+
+    if (sect && sect->IsObject()) {
+        if (sect->HasMember("FullScreen") && (*sect)["FullScreen"].GetBool()) {
+            mainFrame.MaximizeWind();
+        }
+        else {
+            mainFrame.x = (*sect)["ScreenPosX"].GetInt();
+            mainFrame.y = (*sect)["ScreenPosY"].GetInt();
+            mainFrame.Width = (*sect)["Width"].GetInt();
+            mainFrame.Height = (*sect)["Height"].GetInt();
+        }
+    }
 
 	return true;
 }

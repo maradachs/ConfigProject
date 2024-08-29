@@ -10,13 +10,13 @@
 			"Frames":{
 				"RootFrame":{
 					"Placement":{
-						"FullScreen":true,
+						"FullScreen":false,
 						"ScreenPosX":20,
 						"ScreenPosY":20,
 						"Width":800,
-						"Height":600,
-						"FontScale": 1.2
-					}
+						"Height":600
+					},
+					"FontScale": 1.2
 				}
 			}
 		}
