@@ -7,6 +7,10 @@
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/error/en.h>
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/buffer.h>
+
 #include <cstdio>
 
 
@@ -14,6 +18,46 @@ using namespace std;
 using namespace rapidjson;
 
 
+class Base64Helper {
+public:
+    static string Encode(const string& data) {
+        BIO* bio, * b64;
+        BUF_MEM* bufferPtr;
+
+        b64 = BIO_new(BIO_f_base64());
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL); // Без переноса строки
+        bio = BIO_new(BIO_s_mem());
+        bio = BIO_push(b64, bio);
+
+        BIO_write(bio, data.c_str(), data.length());
+        BIO_flush(bio);
+        BIO_get_mem_ptr(bio, &bufferPtr);
+
+        string encoded(bufferPtr->data, bufferPtr->length);
+        BIO_free_all(bio);
+
+        return encoded;
+    }
+
+    static string Decode(const string& encoded) {
+        BIO* bio, * b64;
+        char* buffer = new char[encoded.length()];
+        memset(buffer, 0, encoded.length());
+
+        b64 = BIO_new(BIO_f_base64());
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL); // Без переноса строки
+        bio = BIO_new_mem_buf(encoded.c_str(), -1);
+        bio = BIO_push(b64, bio);
+
+        int decodedLength = BIO_read(bio, buffer, encoded.length());
+        BIO_free_all(bio);
+
+        string decoded(buffer, decodedLength);
+        delete[] buffer;
+
+        return decoded;
+    }
+};
 class ErrorMessage {
 public:
     void ShowMsg(const string& message) {
@@ -68,12 +112,16 @@ public:
         }
         return true;
     }
-	string GetOption(const string& key, const string& defaultValue = "0"){
+	string GetOption(const string& key, const string& defaultValue = "0", bool isBase64Encoded = false){
 
         Value* value = FindValueByKey(key);
         if (value) {
             if (value->IsString()) {
-                return value->GetString();
+                string result = value->GetString();
+                if (isBase64Encoded) {
+                    result = Base64Helper::Decode(result);
+                }
+                return result;
             }
             else if (value->IsInt()) {
                 return to_string(value->GetInt());
@@ -116,10 +164,14 @@ public:
         return false;
     }
 
-    bool SetOption(const string& key, const string& value) {
+    bool SetOption(const string& key, const string& value, bool encodeBase64 = false) {
         Value* v = FindValueByKey(key);
         if (v && v->IsString()) {
-            v->SetString(value.c_str(), doc.GetAllocator());
+            string finalValue = value;
+            if (encodeBase64) {
+                finalValue = Base64Helper::Encode(value);
+            }
+            v->SetString(finalValue.c_str(), doc.GetAllocator());
             return true;
         }
         return false;
@@ -130,6 +182,7 @@ public:
 	string Host;
 	string Instance;
 	int Port;
+    string Password;
 };
 
 class MainFrame {
@@ -155,6 +208,7 @@ bool fnApplySettings(CConfig* cfg)
 	db.Host = cfg->GetOption("App.Globals.DB.HostName");
 	db.Instance = cfg->GetOption("App.Globals.DB.InstanceName");
 	db.Port = stoi(cfg->GetOption("App.Globals.DB.PortNo"));
+    db.Password = cfg->GetOption("App.Globals.DB.Password", "defaultPassword", true);
 
     MainFrame mainFrame;
 
@@ -178,6 +232,10 @@ bool fnApplySettings(CConfig* cfg)
 
     if (!sect || !cfg->SetOption("App.Globals.Frames.RootFrame.Placement.ScreenPosX", mainFrame.x + 10)) {
         error_messanger.ShowMsg("Can’t save option ScreenPosX :(");
+    }
+
+    if (!cfg->SetOption("App.Globals.DB.Password", "1234", true)) {
+        error_messanger.ShowMsg("Can’t save option Password :(");
     }
 
 	return true;
