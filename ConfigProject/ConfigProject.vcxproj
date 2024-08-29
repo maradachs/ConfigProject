@@ -128,7 +128,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base64Helper.cpp" />
+    <ClCompile Include="CConfig.cpp" />
     <ClCompile Include="ConfigProject.cpp" />
+    <ClCompile Include="ErrorMessage.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Base64Helper.h" />
+    <ClInclude Include="CConfig.h" />
+    <ClInclude Include="ErrorMessage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
