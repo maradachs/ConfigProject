@@ -129,14 +129,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base64Helper.cpp" />
-    <ClCompile Include="CConfig.cpp" />
+    <ClCompile Include="ConfigFactory.cpp" />
+    <ClCompile Include="IConfigStorage.cpp" />
+    <ClCompile Include="JsonConfig.cpp" />
     <ClCompile Include="ConfigProject.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />
+    <ClCompile Include="JsonSection.cpp" />
+    <ClCompile Include="SectionType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base64Helper.h" />
-    <ClInclude Include="CConfig.h" />
+    <ClInclude Include="ConfigFactory.h" />
+    <ClInclude Include="IConfigStorage.h" />
+    <ClInclude Include="JsonConfig.h" />
     <ClInclude Include="ErrorMessage.h" />
+    <ClInclude Include="JsonSection.h" />
+    <ClInclude Include="SectionType.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

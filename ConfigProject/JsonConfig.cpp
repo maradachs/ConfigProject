@@ -1,4 +1,5 @@
-#include "CConfig.h"
+#include "JsonConfig.h"
+#include "JsonSection.h"
 #include "Base64Helper.h"
 
 #include <iostream>
@@ -15,7 +16,7 @@ using namespace std;
 using namespace rapidjson;
 
 
-Value* CConfig::FindValueByKey(const string& key) {
+Value* JsonConfig::FindValueByKey(const string& key) {
     Value* current = &doc;
     vector<string> elements = ExtractElements(key);
 
@@ -28,7 +29,7 @@ Value* CConfig::FindValueByKey(const string& key) {
 
     return current;
 }
-vector<string> CConfig::ExtractElements(const string& key) {
+vector<string> JsonConfig::ExtractElements(const string& key) {
     vector<string> elements;
     size_t start = 0, end = 0;
     while ((end = key.find('.', start)) != string::npos) {
@@ -38,7 +39,7 @@ vector<string> CConfig::ExtractElements(const string& key) {
     elements.push_back(key.substr(start));
     return elements;
 }
-bool CConfig::Load(const string& filename) {
+bool JsonConfig::Load(const string& filename) {
     FILE* fp = nullptr;
     fopen_s(&fp, filename.c_str(), "r");
     if (!fp) {
@@ -58,7 +59,7 @@ bool CConfig::Load(const string& filename) {
     }
     return true;
 }
-string CConfig::GetOption(const string& key, const string& defaultValue, bool isBase64Encoded) {
+string JsonConfig::GetOption(const string& key, const string& defaultValue, bool isBase64Encoded) {
 
     Value* value = FindValueByKey(key);
     if (value) {
@@ -81,10 +82,11 @@ string CConfig::GetOption(const string& key, const string& defaultValue, bool is
     }
     return defaultValue;
 }
-Value* CConfig::GetSection(const string& key) {
-    return FindValueByKey(key);
+SectionType* JsonConfig::GetSection(const string& key) {
+    auto value = FindValueByKey(key);
+    return value ? new JsonSection(value) : nullptr;
 }
-bool CConfig::SetOption(const string& key, int value) {
+bool JsonConfig::SetOption(const string& key, int value) {
     Value* v = FindValueByKey(key);
     if (v && v->IsInt()) {
         v->SetInt(value);
@@ -92,7 +94,7 @@ bool CConfig::SetOption(const string& key, int value) {
     }
     return false;
 }
-bool CConfig::SetOption(const string& key, double value) {
+bool JsonConfig::SetOption(const string& key, double value) {
     Value* v = FindValueByKey(key);
     if (v && v->IsDouble()) {
         v->SetDouble(value);
@@ -101,7 +103,7 @@ bool CConfig::SetOption(const string& key, double value) {
     return false;
 }
 
-bool CConfig::SetOption(const string& key, bool value) {
+bool JsonConfig::SetOption(const string& key, bool value) {
     Value* v = FindValueByKey(key);
     if (v && v->IsBool()) {
         v->SetBool(value);
@@ -110,7 +112,7 @@ bool CConfig::SetOption(const string& key, bool value) {
     return false;
 }
 
-bool CConfig::SetOption(const string& key, const string& value, bool encodeBase64) {
+bool JsonConfig::SetOption(const string& key, const string& value, bool encodeBase64) {
     Value* v = FindValueByKey(key);
     if (v && v->IsString()) {
         string finalValue = value;
@@ -121,4 +123,4 @@ bool CConfig::SetOption(const string& key, const string& value, bool encodeBase6
         return true;
     }
     return false;
-}
+};

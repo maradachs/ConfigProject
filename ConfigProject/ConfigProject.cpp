@@ -5,7 +5,8 @@
 
 #include "Base64Helper.h"
 #include "ErrorMessage.h"
-#include "CConfig.h"
+#include "ConfigFactory.h"
+#include "JsonConfig.h"
 
 
 #include <rapidjson/document.h>
@@ -37,7 +38,7 @@ public:
         cout << "Window maximized." << endl;
     }
 };
-bool fnApplySettings(CConfig* cfg)
+bool fnApplySettings(IConfigStorage* cfg)
 {
     if (!cfg)
     {
@@ -64,7 +65,8 @@ bool fnApplySettings(CConfig* cfg)
         cerr << "Error: Invalid FontScale value. " << e.what() << endl;
         return false;
     }
-    Value* sect = cfg->GetSection("App.Globals.Frames.RootFrame.Placement");
+    
+    SectionType* sect = cfg->GetSection("App.Globals.Frames.RootFrame.Placement");
 
     if (sect && sect->IsObject()) {
         if (sect->HasMember("FullScreen") && (*sect)["FullScreen"].GetBool()) {
@@ -87,19 +89,20 @@ bool fnApplySettings(CConfig* cfg)
     if (!cfg->SetOption("App.Globals.DB.Password", "1234", true)) {
         error_messanger.ShowMsg("Can’t save option Password :(");
     }
-
+    
     return true;
 }
 
 
 int main() {
-    CConfig cfg;
+    //CConfig cfg;
+    IConfigStorage* cfg = ConfigFactory::CreateConfig("json");
     auto* file = "Settings.json";
-    if (!cfg.Load(file))  return 0;
+    if (!cfg->Load(file))  return 0;
 
     ErrorMessage error_messanger;
 
-    if (!fnApplySettings(&cfg)) {
+    if (!fnApplySettings(cfg)) {
         error_messanger.ShowMsg("Can’t apply settings :(");
     }
     else {
